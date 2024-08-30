@@ -6,7 +6,7 @@ const User = UserDefault.User;
 class UserController extends Controllers.Controllers {
     async create(req, res){
         try {
-            console.log(req.body);
+            console.log("Body:" + req.body);
             // const user = await User.create(req.body);
             // res.status(201).json(user);
             res.status(201).json({ message: 'User created' });
@@ -17,14 +17,23 @@ class UserController extends Controllers.Controllers {
 
     async read(req, res) {
         try {
+            console.log("Params:" + req.params.id);
+            const countUser = await User.count();
+            if(countUser <= 0){
+                return res.status(404).json({ error: 'No users found, the table `' + User.tableName + '` is empty' });
+            }
+            if(req.params.id === undefined){
+                const users = await User.findAll();
+                return res.json(users);
+            }
             const user = await User.findByPk(req.params.id);
             if (user) {
-                res.json(user);
-            } else {
-                res.status(404).json({ error: 'User not found' });
+                return res.json(user);
             }
+
+            res.status(404).json({ error: 'User not found' });
         } catch (error) {
-            res.status(500).json({ error: 'Error retrieving user' });
+            res.status(500).json({ error: 'Error retrieving user' + error.message });
         }
     }
 
